@@ -56,11 +56,33 @@ class BackendOnlineAkte extends BackendDiff {
 	private $_baseUrlTodos;
     private $_securityGatewayUrl;
     // Die $_connectorKanzleien können zu einem späteren Zeitpunkt wieder entfernt werden
-    private $_connectorKanzleien = array('mltest', 'legiteamgmbh2', 'stephan korb', 'steinbock-partner', 'helpdesktermine', 'linnemann', 'advocateassociate', 'kanzlei krone', 'meyer & frey', 'meyer &amp; frey', 'kanzleiskks', 'kanzlei-qlb', 'tietje', 'kanzlei boehling', 'wns2015', 'e&h', 'e&amp;h', 'atticus');
+    // private $_connectorKanzleien = array('mltest', 'legiteamgmbh2', 'stephan korb', 'steinbock-partner', 'helpdesktermine', 'linnemann', 'advocateassociate', 'kanzlei krone', 'meyer & frey', 'meyer &amp; frey', 'kanzleiskks', 'kanzlei-qlb', 'tietje', 'kanzlei boehling', 'wns2015', 'e&h', 'e&amp;h', 'atticus');
+    private $_connectorKanzleien = array('mltest', 'legiteamgmbh2', 'stephan korb', 'steinbock-partner', 'helpdesktermine', 'advocateassociate', 
+        'kanzlei krone', 'kanzleiskks', 'kanzlei-qlb', 'Tietje', 'tietje', 'kanzlei boehling', 'WNS2015', 'wns2015', 'e&h', 'E&amp;H', 'E&H', 'e&amp;h', 
+        'atticus', 'ra-holler', 'durach', 'KoppundPartner', 'KoppPartner', 'ystest', 'rechtsanwaelte-telgte', 'RSCW', 'Kanzlei Vlachou', 
+        'Schwertle & Schwertle', 'birkholz', 'kanzleibischof', 'f-r-p', 'gabriele-hertel', 'osh', 'bboehle', 'raschmutz', 'anwalttaunusstein', 'ra-rausse', 
+        'kanzlei kieper', 'rechtsanwalt-hoyer', 'rageissler', 'rechtsanwaltpauli', 'krüger-kirmess', 'chs rechtsanwaelte', 'kanzlei-thuemlein', 'raemoser', 
+        'vertriebs-gmbh mitte', 'achour', 'rechtsanwaelte-passau', 'scholz', 'aih jens janssen', 'h.a.rai', 'sabineschwarzbo', 'vvs rechtsanwälte', 
+        'annetterüb', 'thoennessen', 'akm172', 'selenberg-freitag', 'hoeherkramp', 'becker', 'wshp.law', 'lawcon', 'weigand &amp; keller', 'kanzlei-robe', 'krukowski', 'anwaltsbüro.paar', 'ratis', 'grrae', 'lenzeundpartner', 'familienanwalt-bs', 'ra-gregormaihoefer', 'eibelshaeuser', 'ght-kmb', 'hessel', 'mw-rechtsanwaelte', 'huS68161', 'kanzleien am hohenzollernring', 'schöffel', 'kanzlei-stoldt', 'ra-scheibe', 'rae-ehrenhainstrasse', 'kahlu', 'shp-recht-hechingen', 'halberechtsanwaelte', 'kdb.legal', 'pohlenmeister', 'conradlambert', 'wienberg', 'chs-rechtsanwaelte', 'kgsrw18', 'dmi-inkasso', 'freidl', 'kanzlei schullerus', 'koenigswall', 'braukmannkanzlei', 'bertramschulz', 'kanzlei vlachou',
+        'rawueller', 'ziems', 'guthke zickendraht', 'ademi', 'raproebsting', 'mmsfb', 'menzundpartner', 'kanzlei_nicklas', 'wigadi-koeln', 
+        'nurkovic', 'muench', 'diller', 'beckermollenkott', 'krauseundpartner', 'kanzleiwittkop', 'drkroeger', 'swinkler', 'anwaltochsenfurt', 
+        'anwalt-ru', 'rahoffmann', 'gubitz', 'blumenthal', 'wb42103', 'stumm', 'gks rechtsanwälte', 'kdu', 'ra-boes', 'wortmann', 'dubick', 'uebbert', 
+        'rlsrechtsanwälte', 'blfpartner', 'metten-theissen', 'schoening', 'driemer', 'hebebrand', 'kpsonline', 'anwaeltin-hagen', 'thremer', 'ramoser', 
+        'walther', 'drriemer', 'roehlke', 'theus-rechtsanwaelte', 'kabus', 'rechteffizient', 'a-k-t', 'freundlich-kollegen', 'woelbert', 'wr-kanzlei', 
+        'wetter', 'schmelterschott', 'rapodewin', 'ponti.legal', 'KANZLEI-KANTEKIN', 'albrecht', 'ra-maschke', 'vonderinger', 'herrmann-weik', 'pdpartner', 
+        'kschmidt', 'XXXhenties &amp; kollegen', 'sundermann', 'nbh-strafrecht', 'klostermann', 'syring', 'lisa_chiarelli', 'ssk', 'kanzlei_koerner', 
+        'rechtsanwaeltinhuhs', 'hechmat', 'lesser', 'rechtsanwalt-beslenmis', 'barkhoff-partner', 'lang und menger rechtsanwälte partnerschaft', 
+        'dohrmann', 'dietrich', 'lt_michael', 'kerstinnierling', 'd.kaiser', 'strafrechtlerin', 'kanzlei-breitbarth', 'w2wolff', 'law-con, oberusel', 
+        'meiss-rechtsanwaelte', 'esser-esser', 'ra-schmelzer', 'fhlaw', 'redmer-rupp', 'rechtsinformer', 'rabaertschi', 'susanne-helweg', 
+        'raevolmer_droeing', 'anwaltshaus gladenbach','petereit', 'kanzlei49', 'ra grotenhöfer', 'ruether', 'graf-schaefer', 'goldmann', 'axelvogt', 
+        'bbp-essen', 'karl-xander', 'hölz knarr solf', 'meyer & frey', 'meyer &amp; frey', 'botsaris', 'mmr', 'pohlenmeister', 'woelky', 'hessel', 
+        'milosevic', 'hea-rechtsanwalt', 'stahl', 'kanzlei-scaglione', 'schrey', 'buerorichter', 'kanzleiamcitytor', 'kanzlei-bussian', 'inesschwarz', 'koll-hoefer', 
+        'kbm', 'tieben', 'henties & kollegen', 'henties &amp; kollegen', 'kanzkleiws', 'kaw-detmold', 'raewintermann', 'gennrich'
+    );
     private $_connectorKanzleienAlleOrdner = array('mltestXXX'); // Hier kann für eine Kanzlei aktiviert werden, dass alle Ordner anezeigt werden also auch die anderen Mitarbeiter
     private $_access_token;
     private $_tokenData;
-    private $_forceConnector = array('steinbock-partner'); // kein Fallback auf Freigabediennst
+    private $_forceConnector = array('steinbock-partner', 'ra-holler', 'koenigswall'); // kein Fallback auf Freigabediennst
 
 	public function GetSupportedASVersion() {
 		return ZPush::ASV_14;
@@ -172,9 +194,9 @@ class BackendOnlineAkte extends BackendDiff {
         try {
             $identityHMAC = new IdentityHMAC();
             $identityHMAC->AppID = "SPK_2.0";
-            $identityHMAC->Kanzlei = $this->_kanzlei;
+            $identityHMAC->Kanzlei = htmlspecialchars_decode($this->_kanzlei);
             $identityHMAC->Database = $this->_datenbank;
-            $identityHMAC->User = $this->_kuerzel;
+            $identityHMAC->User = htmlspecialchars_decode($this->_kuerzel);
             $identityHMAC->Password = $this->_passwortRest;
             $identityHMAC->Role = 2;
             $identityHMAC->Product = 1;
@@ -282,7 +304,7 @@ class BackendOnlineAkte extends BackendDiff {
             $this->_frnrSuffix = preg_replace("/[^A-Za-z0-9@#]/", "_", $username);
 
             // prüfen ob Kanzlei bereits connector verwendet
-            if (in_array(strtolower($this->_kanzlei), $this->_connectorKanzleien)) {
+            if (in_array(mb_strtolower($this->_kanzlei), $this->_connectorKanzleien)) {
                 if ($this->GetCachedConfig()) {
                     return true;
 				}
@@ -555,9 +577,11 @@ class BackendOnlineAkte extends BackendDiff {
 	}
 
     private function UseConnector() {
-		if (in_array(mb_strtolower($this->_kanzlei), $this->_forceConnector)) {
+		// if (in_array(mb_strtolower($this->_kanzlei), $this->_forceConnector)) {
+		// MTepel: Fallback to SPK 1.0 deactivated on 11.07.2024
+                if (in_array(mb_strtolower($this->_kanzlei), $this->_connectorKanzleien)) {
                     if (empty($this->_mitarbeiter)) {
-		        ZLog::Write(LOGLEVEL_INFO, sprintf("BackendOnlineAkte->UseConnector Forcing connector usage for '%s'", $this->_kanzlei));
+		        ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendOnlineAkte->UseConnector Forcing connector usage for '%s'", $this->_kanzlei));
                         $this->_mitarbeiter[] = $this->_kuerzel;
                     }
                     return true;
