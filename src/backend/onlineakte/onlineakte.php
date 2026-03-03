@@ -60,10 +60,13 @@ class BackendOnlineAkte extends BackendDiff {
     private $_connectorKanzleien = array('mltest', 'legiteamgmbh2', 'stephan korb', 'steinbock-partner', 'helpdesktermine', 'advocateassociate', 
         'kanzlei krone', 'kanzleiskks', 'kanzlei-qlb', 'Tietje', 'tietje', 'kanzlei boehling', 'WNS2015', 'wns2015', 'e&h', 'E&amp;H', 'E&H', 'e&amp;h', 
         'atticus', 'ra-holler', 'durach', 'KoppundPartner', 'KoppPartner', 'ystest', 'rechtsanwaelte-telgte', 'RSCW', 'Kanzlei Vlachou', 
-        'Schwertle & Schwertle', 'birkholz', 'kanzleibischof', 'f-r-p', 'gabriele-hertel', 'osh', 'bboehle', 'raschmutz', 'anwalttaunusstein', 'ra-rausse', 
+        'schwertle & schwertle', 'schwertle &amp; schwertle', 'birkholz', 'kanzleibischof', 'f-r-p', 'gabriele-hertel', 'osh', 'bboehle', 'raschmutz', 'anwalttaunusstein', 'ra-rausse', 
         'kanzlei kieper', 'rechtsanwalt-hoyer', 'rageissler', 'rechtsanwaltpauli', 'krüger-kirmess', 'chs rechtsanwaelte', 'kanzlei-thuemlein', 'raemoser', 
         'vertriebs-gmbh mitte', 'achour', 'rechtsanwaelte-passau', 'scholz', 'aih jens janssen', 'h.a.rai', 'sabineschwarzbo', 'vvs rechtsanwälte', 
-        'annetterüb', 'thoennessen', 'akm172', 'selenberg-freitag', 'hoeherkramp', 'becker', 'wshp.law', 'lawcon', 'weigand &amp; keller', 'kanzlei-robe', 'krukowski', 'anwaltsbüro.paar', 'ratis', 'grrae', 'lenzeundpartner', 'familienanwalt-bs', 'ra-gregormaihoefer', 'eibelshaeuser', 'ght-kmb', 'hessel', 'mw-rechtsanwaelte', 'huS68161', 'kanzleien am hohenzollernring', 'schöffel', 'kanzlei-stoldt', 'ra-scheibe', 'rae-ehrenhainstrasse', 'kahlu', 'shp-recht-hechingen', 'halberechtsanwaelte', 'kdb.legal', 'pohlenmeister', 'conradlambert', 'wienberg', 'chs-rechtsanwaelte', 'kgsrw18', 'dmi-inkasso', 'freidl', 'kanzlei schullerus', 'koenigswall', 'braukmannkanzlei', 'bertramschulz', 'kanzlei vlachou',
+        'annetterüb', 'thoennessen', 'akm172', 'selenberg-freitag', 'hoeherkramp', 'becker', 'wshp.law', 'lawcon', 'weigand &amp; keller', 'kanzlei-robe', 'krukowski', 'anwaltsbüro.paar', 
+        'ratis', 'grrae', 'lenzeundpartner', 'familienanwalt-bs', 'ra-gregormaihoefer', 'eibelshaeuser', 'ght-kmb', 'hessel', 'mw-rechtsanwaelte', 'huS68161', 'kanzleien am hohenzollernring', 
+        'schöffel', 'kanzlei-stoldt', 'ra-scheibe', 'rae-ehrenhainstrasse', 'kahlu', 'shp-recht-hechingen', 'halberechtsanwaelte', 'kdb.legal', 'pohlenmeister', 'conradlambert', 'wienberg', 
+        'chs-rechtsanwaelte', 'kgsrw18', 'dmi-inkasso', 'freidl', 'kanzlei schullerus', 'koenigswall', 'braukmannkanzlei', 'bertramschulz', 'kanzlei vlachou', 
         'rawueller', 'ziems', 'guthke zickendraht', 'ademi', 'raproebsting', 'mmsfb', 'menzundpartner', 'kanzlei_nicklas', 'wigadi-koeln', 
         'nurkovic', 'muench', 'diller', 'beckermollenkott', 'krauseundpartner', 'kanzleiwittkop', 'drkroeger', 'swinkler', 'anwaltochsenfurt', 
         'anwalt-ru', 'rahoffmann', 'gubitz', 'blumenthal', 'wb42103', 'stumm', 'gks rechtsanwälte', 'kdu', 'ra-boes', 'wortmann', 'dubick', 'uebbert', 
@@ -77,7 +80,9 @@ class BackendOnlineAkte extends BackendDiff {
         'raevolmer_droeing', 'anwaltshaus gladenbach','petereit', 'kanzlei49', 'ra grotenhöfer', 'ruether', 'graf-schaefer', 'goldmann', 'axelvogt', 
         'bbp-essen', 'karl-xander', 'hölz knarr solf', 'meyer & frey', 'meyer &amp; frey', 'botsaris', 'mmr', 'pohlenmeister', 'woelky', 'hessel', 
         'milosevic', 'hea-rechtsanwalt', 'stahl', 'kanzlei-scaglione', 'schrey', 'buerorichter', 'kanzleiamcitytor', 'kanzlei-bussian', 'inesschwarz', 'koll-hoefer', 
-        'kbm', 'tieben', 'henties & kollegen', 'henties &amp; kollegen', 'kanzkleiws', 'kaw-detmold', 'raewintermann', 'gennrich'
+        'kbm', 'tieben', 'henties & kollegen', 'henties &amp; kollegen', 'kanzkleiws', 'kaw-detmold', 'raewintermann', 'gennrich', 'rain-dhl', 'immobilienkanzle', 
+        'ra-schwenger', 'erbrechtkontor', 'carstenhendrych', 'bsl', 'svaraknis', 'bfs-anwaelte', 'kanzleilanga', 'kowal', 'kanzlei_kordes', 'krettler', 
+        'dka-kanzlei', 'boehmker', 'tup', 'anwalt-baecker'
     );
     private $_connectorKanzleienAlleOrdner = array('mltestXXX'); // Hier kann für eine Kanzlei aktiviert werden, dass alle Ordner anezeigt werden also auch die anderen Mitarbeiter
     private $_access_token;
