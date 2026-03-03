@@ -84,6 +84,7 @@ class BackendOnlineAkte extends BackendDiff {
         'ra-schwenger', 'erbrechtkontor', 'carstenhendrych', 'bsl', 'svaraknis', 'bfs-anwaelte', 'kanzleilanga', 'kowal', 'kanzlei_kordes', 'krettler', 
         'dka-kanzlei', 'boehmker', 'tup', 'anwalt-baecker'
     );
+    private $_spk10Kanzleien = array();
     private $_connectorKanzleienAlleOrdner = array('mltestXXX'); // Hier kann für eine Kanzlei aktiviert werden, dass alle Ordner anezeigt werden also auch die anderen Mitarbeiter
     private $_access_token;
     private $_tokenData;
@@ -147,7 +148,7 @@ class BackendOnlineAkte extends BackendDiff {
             $redis->setex($redisKeyRelayUrl, $ttl, $this->_relayUrl);
             $redis->setex($redisKeySecurityGatewayUrl, $ttl, $this->_securityGatewayUrl);
         } catch (Exception $ex) {
-            ZLog::Write(LOGLEVEL_ERROR, "BackendOnlineAkte->CacheConfig() Exception: " . $ex->getMessage());            
+            ZLog::Write(LOGLEVEL_ERROR, "BackendOnlineAkte->CacheConfig() Exception: " . $ex->getMessage());
         }
     }
 
@@ -193,9 +194,9 @@ class BackendOnlineAkte extends BackendDiff {
     private function GetToken() {
         // Neues Token vom Security Gateway anfordern
         // Return: Gültigkeit des Token in Sekunden oder 0 bei Fehler
-        
+
         $exceptionMsg = "Error getting token: Unknown Error in GetToken";
-        
+
         try {
             $identityHMAC = new IdentityHMAC();
             $identityHMAC->AppID = "SPK_2.0";
@@ -243,7 +244,7 @@ class BackendOnlineAkte extends BackendDiff {
                         }
                     } else {
                         $exceptionMsg = "Error getting token: Got response without body!";
-                        ZLog::Write(LOGLEVEL_ERROR, "BackendOnlineAkte->GetToken() " . $exceptionMsg);                        
+                        ZLog::Write(LOGLEVEL_ERROR, "BackendOnlineAkte->GetToken() " . $exceptionMsg);
                     }
                 } else {
                     if ($rest->hasBody()) {
@@ -269,9 +270,9 @@ class BackendOnlineAkte extends BackendDiff {
     private function GetMitarbeiter() {
         // - Mitarbeiter  (=folder) auslesen
         // Kunden wollen die Ordner Ihrer Kollegen bisher nicht sehen
-        
+
         if (!in_array(strtolower($this->_kanzlei), $this->_connectorKanzleienAlleOrdner)) {
-            $this->_mitarbeiter[] = $this->_kuerzel;            
+            $this->_mitarbeiter[] = $this->_kuerzel;
         } else {
             // ToDo: Wenn die Ordnerunterstützung nach der Abschaltung von Basic Auth wieder gehen soll muss hier und
             // im SecurityGateway angepasst und das token verwendet werden 
@@ -548,7 +549,7 @@ class BackendOnlineAkte extends BackendDiff {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Returns information on the folder.
 	 * @see BackendDiff::StatFolder()
@@ -605,7 +606,7 @@ class BackendOnlineAkte extends BackendDiff {
             return "";
 		}
 	}
-        
+
 	function getLineBreakType($strTemp) {
         if (strlen($strTemp) == 0) {
 			return false;
@@ -696,13 +697,13 @@ class BackendOnlineAkte extends BackendDiff {
             throw new OnlineakteException("AdvoNet Anmeldefehler", 503);
         } else {
             if ($this->UseConnector()) {
-                throw new OnlineakteException("AdvoNet Netzwerkfehler", 503);                    
+                throw new OnlineakteException("AdvoNet Netzwerkfehler", 503);
             } else {
 				throw new OnlineakteException("Onlineakte Netzwerkfehler", 503);
 			}
 		}
 	}
-        
+
 	function GetEventsFromOnlineAkteRest($folderid, $start = null, $finish = null) {
 		ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendOnlineAkte->GetEventsFromOnlineAkteRest('%s', %s','%s')", $folderid, $start, $finish));
 		$report = array();
@@ -733,7 +734,7 @@ class BackendOnlineAkte extends BackendDiff {
                     throw new Exception('Fehler in GetEventsFromOnlineAkteRest: HTTP Status ' . $rest->code . "\r\n\r\nHeaders: " . $rest->raw_headers . "\r\n\r\nBody: " . $rest->raw_body . "\r\n\r\n");
 			}
             }
-			
+
 			foreach($rest->body as $termin) {
 				//echo var_dump($termin);
 				$response = array();
@@ -745,9 +746,9 @@ class BackendOnlineAkte extends BackendDiff {
             ZLog::Write(LOGLEVEL_ERROR, 'BackendOnlineAkte->GetEventsFromOnlineAkteRest() Exception: ' . $fault->getMessage());
             $this->ThrowAdvoNetException($fault);
 		}
-		return $report;            
+		return $report;
 	}
-        
+
 	/**
 	 * Get a list of all the messages.
 	 * @see BackendDiff::GetMessageList()
@@ -762,7 +763,7 @@ class BackendOnlineAkte extends BackendDiff {
 		$finish = date("Y-m-d\TH:i:sP", 2147483647);
 		$beginRest = date("Y-m-d", $cutoffdate);
 		$finishRest = date("Y-m-d", 2147483647);
-		
+
         if (substr($folderid, 0, strlen("calendar")) === "calendar") {
 			$msgs = $this->GetEventsFromOnlineAkteRest($folderid, $beginRest, $finishRest);
         } else if (substr($folderid, 0, strlen("tasks")) === "tasks") {
@@ -792,9 +793,9 @@ class BackendOnlineAkte extends BackendDiff {
 		$data = $this->_collection[$id]['data'];
 
         if (substr($folderid, 0, strlen("calendar")) === "calendar") {
-			return $this->_ParseVEventToASRest($data, $contentparameters);                        
+			return $this->_ParseVEventToASRest($data, $contentparameters);
         } elseif (substr($folderid, 0, strlen("tasks")) === "tasks") {
-			return $this->_ParseVTodoToASRest($data, $contentparameters);                        
+			return $this->_ParseVTodoToASRest($data, $contentparameters); 
 		}
 		return false;
 	}
@@ -897,7 +898,7 @@ class BackendOnlineAkte extends BackendDiff {
 			$e = $this->GetEntryByUidFromOnlineAkteRest($folderid, $id);
 			if ($e == null && count($e) <= 0)
 				return;
-			$data = $e[0];                                        
+			$data = $e[0];
 		}
 		$message = array();
 		$message['id'] = $data['href'];
@@ -911,7 +912,7 @@ class BackendOnlineAkte extends BackendDiff {
 //                    ZLog::Write(LOGLEVEL_INFO, 'BackendOnlineAkte->StatMessage(): ZuletztGeaendertAm: ' . print_r($data['data']->ZuletztGeaendertAm, true), false);
 //                    ZLog::Write(LOGLEVEL_INFO, 'BackendOnlineAkte->StatMessage(): data: ' . print_r($data['data'], true), false);
 //                    ZLog::Write(LOGLEVEL_INFO, 'BackendOnlineAkte->StatMessage(): newDateTime: ' . print_r($newDateTime, true), false);
-				//$message['mod'] = $newDateTime->getTimestamp();                    
+				//$message['mod'] = $newDateTime->getTimestamp();
 			$message['mod'] = date_format($newDateTime, "Ymd\THis\Z");
         } else {
 			$newDateTime = DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $data['data']->ZuletztGeaendertAm, timezone_open("UTC")); //2016-06-22T13:17:01
@@ -1002,7 +1003,7 @@ class BackendOnlineAkte extends BackendDiff {
             $this->ThrowAdvoNetException($fault);
 		}
 			}
-        
+
 	/**
 	 * Change/Add a message with contents received from ActiveSync
 	 * @see BackendDiff::ChangeMessage()
@@ -1012,14 +1013,14 @@ class BackendOnlineAkte extends BackendDiff {
         ZLog::Write(LOGLEVEL_DEBUG, 'BackendOnlineAkte->changeMessageRest() $message=' . print_r($message, true));
 
 		$data = $this->_ParseASToVCalendarRest($message, $folderid ); // $data ist ein array, kein objekt!
-		
+
 		if (!$this->UseConnector()) {
 			if (substr($folderid, 0, strlen("tasks")) === "tasks") {
 				$data["Kuerzel"] = $this->_kuerzel;
 				$data["SB"] = $this->_kuerzel;
             } else {
 				$data["Anwalt"] = $this->_kuerzel;
-				$data["Sb"] = $this->_kuerzel;                
+				$data["Sb"] = $this->_kuerzel;
 			}
         } else {
 			// connector
@@ -1028,13 +1029,13 @@ class BackendOnlineAkte extends BackendDiff {
 				if (!empty($kuerzel)) {
 					$data["Kuerzel"] = $kuerzel;
                 } else {
-					$data["Kuerzel"] = "Pool";                    
+					$data["Kuerzel"] = "Pool";
 				}
 				$data["SB"] = $this->_kuerzel;
             } else {
 				$data["Anwalt"] = $kuerzel;
-				$data["Sb"] = $this->_kuerzel;                
-			}                
+				$data["Sb"] = $this->_kuerzel;
+			}
 		}
 
 		$data = $this->arrayToObject($data);
@@ -1052,13 +1053,13 @@ class BackendOnlineAkte extends BackendDiff {
 				$dataOld = $dataOld[0]['data'];
 			}
 		}
-		
+
 		if (isset($dataOld->FrNr) && ($dataOld->FrNr == $data->FrNr)) {
 			// Ändern
 			if ($this->UseConnector()) {
 				// Wenn der connector verwendet wird muss verhindert werden, dass private Termine anderer Mitarbeiter verändert werden.
 				if (isset($dataOld->Privat) && ($dataOld->Privat == 1) && $this->_kuerzel != $dataOld->Anwalt) {
-					$message = array();             
+					$message = array();
 					$message['id'] = $id;
 					$message['flags'] = "1";
 					$current_time = new DateTime();
@@ -1146,18 +1147,18 @@ class BackendOnlineAkte extends BackendDiff {
 		return $this->StatMessage($folderid, $id);
 	}
 
-	private function arrayToObject( $array ) { 
-		$object = new stdClass(); 
-		foreach( $array as $key => $value ) { 
-			if( is_array( $value ) ) { 
-				$object->$key = arrayToObject( $value ); 
+	private function arrayToObject( $array ) {
+		$object = new stdClass();
+		foreach( $array as $key => $value ) {
+			if( is_array( $value ) ) {
+				$object->$key = arrayToObject( $value );
             } else {
-				$object->$key = $value; 
-			} 
-		}      
-		return $object; 
+				$object->$key = $value;
+			}
+		}
+		return $object;
 	}
-        
+
         /**
 	 * Change/Add a message with contents received from ActiveSync
 	 * @see BackendDiff::ChangeMessage()
@@ -1212,7 +1213,7 @@ class BackendOnlineAkte extends BackendDiff {
         ZLog::Write(LOGLEVEL_INFO, sprintf("BackendOnlineAkte->DeleteMessageOnlineAkteRest() frnr=%s folder=%s", $frnr, $folderid));
 		return true;
 	}
-        
+
 	/**
 	 * Delete a message from the OnlineAkte server.
 	 * @see BackendDiff::DeleteMessage()
@@ -1235,7 +1236,7 @@ class BackendOnlineAkte extends BackendDiff {
 			return true;
         }
 
-		return $this->DeleteMessageOnlineAkteRest(substr($id, 0, strpos($id,'@')), $folderid);                
+		return $this->DeleteMessageOnlineAkteRest(substr($id, 0, strpos($id,'@')), $folderid);
 	}
 
 	/**
@@ -1273,7 +1274,7 @@ class BackendOnlineAkte extends BackendDiff {
 	private function _ParseASToVCalendarRest($data, $folderid) {
 		if (substr($folderid, 0, strlen("calendar")) === "calendar") {
 			$termin = $this->_ParseASEventToVEventRest($data);
-			return $termin;                
+			return $termin;
         } else if (substr($folderid, 0, strlen("tasks")) === "tasks") {
 			$event = $this->_ParseASTaskToVTodoRest($data);
 			return $event;
@@ -1309,7 +1310,7 @@ class BackendOnlineAkte extends BackendDiff {
 		$message->meetingstatus = 0;
 
 		if (isset($vevent->Text)) {
-			$message->subject = $vevent->Text;                    
+			$message->subject = $vevent->Text;
 		}
 		if (isset($vevent->Nr)) {
 			if ($vevent->Nr > 0) {
@@ -1328,7 +1329,7 @@ class BackendOnlineAkte extends BackendDiff {
 			if (isset($vevent->Anwalt)) {
 				// Kürzel am Anfang des Titels anzeigen wie in advoware
 				if (empty($vevent->Anwalt)  || ($vevent->Anwalt == 'ALLE') || ($vevent->Anwalt == 'Allgemein') ) {
-					$message->subject = "ALLE/" . $message->subject;                            
+					$message->subject = "ALLE/" . $message->subject;
                 } else {
 					$message->subject = $vevent->Anwalt . "/" . $message->subject;
 				}
@@ -1468,7 +1469,7 @@ class BackendOnlineAkte extends BackendDiff {
 					if (isset($vevent->UhrzeitBis)) {
 						$recurrence->until = $this->_MakeUTCDateRest(substr($vevent->DatumBis, 0, 11) . $vevent->UhrzeitBis);
                     } else {
-						$recurrence->until = $this->_MakeUTCDateRest(substr($vevent->DatumBis, 0, 11) . '23:59:59');                                
+						$recurrence->until = $this->_MakeUTCDateRest(substr($vevent->DatumBis, 0, 11) . '23:59:59');
 					}
 				}
 				$recurrence->interval = $vevent->Turnus;
@@ -1491,8 +1492,8 @@ class BackendOnlineAkte extends BackendDiff {
 				}
 			}
 		}
-	 
-	return $message;            
+
+	return $message;
 	}
 
         /**
@@ -1507,7 +1508,7 @@ class BackendOnlineAkte extends BackendDiff {
 		$message->importance = "1";
 		$message->complete = "0";
 		if (isset($vtodo->Text)) {
-			$message->subject = $vtodo->Text;                    
+			$message->subject = $vtodo->Text;
 		}
 		if (isset($vtodo->Status)) {
 			switch ($vtodo->Status) {
@@ -1524,11 +1525,11 @@ class BackendOnlineAkte extends BackendDiff {
 		}
 		if (isset($vtodo->Erledigt_Datum)) {
 			if ($vtodo->Erledigt_Datum != "0001-01-01T00:00:00Z") {
-				$message->datecompleted = $this->_MakeUTCDateRest($vtodo->Erledigt_Datum);                    
+				$message->datecompleted = $this->_MakeUTCDateRest($vtodo->Erledigt_Datum);
 			}
 		}
 		if (isset($vtodo->Datum)) {
-			$message->utcduedate = $this->_MakeUTCDateRest($vtodo->Datum);                    
+			$message->utcduedate = $this->_MakeUTCDateRest($vtodo->Datum);
 		}
 		if (isset($vtodo->Prioritaet)){
 			switch ($vtodo->Prioritaet) {
@@ -1539,11 +1540,11 @@ class BackendOnlineAkte extends BackendDiff {
 					$message->importance = "0"; // Low
 					break;
 				default:
-					$message->importance = "1"; // Normal   
+					$message->importance = "1"; // Normal
 					break;
 			}
 		}
-                
+
 		// ToDo: Für später: Wiederholungen von Aufgaben
 
 		if (isset($vtodo->Privat)) {
@@ -1553,7 +1554,7 @@ class BackendOnlineAkte extends BackendDiff {
 				$message->sensitivity = "0";
 			}
 		}
-                
+
 		if (isset($vtodo->Notizen)) {
 			$body = $vtodo->Notizen;
 			$body = str_replace("\n","\r\n", str_replace("\r","",$body));
@@ -1580,16 +1581,16 @@ class BackendOnlineAkte extends BackendDiff {
 				$message->bodysize = strlen($message->body);
 			}
 		}
-                		
+
 		if (isset($vtodo->ErinnerungsDatum)) {
 			if ($vtodo->ErinnerungsDatum != "0001-01-01T00:00:00Z") {
 				$message->remindertime = $this->_MakeUTCDateRest($vtodo->ErinnerungsDatum);
 				$message->reminderset = "1";
 			}
 		}
-		return $message;		
+		return $message;
 	}
-	
+
 	private function _ParseASEventToVEventRest($data) {
 		ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendOnlineAkte->_ParseASEventToVEventRest data=\n%s\n", print_r($data, true)), false );
 		$termin = array();
@@ -1684,7 +1685,7 @@ class BackendOnlineAkte extends BackendDiff {
 								$count = $data->recurrence->occurrences;
 							}
 							if ($count >= 2) {
-							// ToDO: Hier muss noch irgendwie die Endzeit gesetzt werden                                    
+							// ToDO: Hier muss noch irgendwie die Endzeit gesetzt werden
                             } else {
 								// Wiederholung ohne Enddatem (=für immer)
 								// größtes Datum in 32 Bit Unix Timestamp ist 2038-1-19T03:14:08Z
@@ -1831,7 +1832,7 @@ class BackendOnlineAkte extends BackendDiff {
             } else {
 				$body = str_replace ( "\n", "\r\n", str_replace ( "\r", "", $body ) );
 			}
-			$termin["Notiz"] = $body;                
+			$termin["Notiz"] = $body;
 		}
 //            if (isset($data->categories) && is_array($data->categories)) {
 //                    $vevent->AddProperty("CATEGORIES", implode(",", $data->categories));
@@ -1869,7 +1870,7 @@ class BackendOnlineAkte extends BackendDiff {
             } else {
 				$body = str_replace ( "\n", "\r\n", str_replace ( "\r", "", $body ) );
 			}
-			$vtodo["Notizen"] = $body;                
+			$vtodo["Notizen"] = $body;
 		}
         if (isset($data->complete)) {
             if ($data->complete == "0") {
@@ -1905,7 +1906,7 @@ class BackendOnlineAkte extends BackendDiff {
 				$vtodo["Datum"] = gmdate("Y-m-d\TH:i:s\Z", $data->remindertime);
 			}
 		}
-		
+
 		if (!isset($vtodo["Datum"])) {
 			$vtodo["Datum"] = gmdate("Y-m-d\TH:i:s\Z");
 		}
@@ -1938,7 +1939,7 @@ class BackendOnlineAkte extends BackendDiff {
 			$vevent->AddProperty("DESCRIPTION", $rtfparser->out);
 			$vtodo["Notizen"] = $rtfparser->out;
 		}
-	
+
 		return $vtodo;
 	}
 
