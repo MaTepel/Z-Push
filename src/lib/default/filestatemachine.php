@@ -116,10 +116,8 @@ class FileStateMachine implements IStateMachine {
         $filename = $this->getFullFilePath($devid, $type, $key, $counter);
 
         if(file_exists($filename)) {
-            $contents = Utils::SafeGetContents($filename, __FUNCTION__, false);
-            $bytes = strlen($contents);
-            ZLog::Write(LOGLEVEL_DEBUG, sprintf("FileStateMachine->GetState() read '%d' bytes from file: '%s'", $bytes, $filename ));
-            return unserialize($contents);
+            $contents = Utils::SafeGetContents($filename, __FUNCTION__, false, true);
+            return $contents;
         }
         // throw an exception on all other states, but not FAILSAVE as it's most of the times not there by default
         else if ($type !== IStateMachine::FAILSAVE)
@@ -205,13 +203,10 @@ class FileStateMachine implements IStateMachine {
 
         // exclusive block
         if ($mutex->Block()) {
-            $filecontents = Utils::SafeGetContents($this->userfilename, __FUNCTION__, true);
-
-            if ($filecontents)
-                $users = unserialize($filecontents);
-            else
+            $users = Utils::SafeGetContents($this->userfilename, __FUNCTION__, true, true);
+            if (!$users) {
                 $users = array();
-
+            }
             // add user/device to the list
             if (!isset($users[$username])) {
                 $users[$username] = array();
@@ -249,13 +244,10 @@ class FileStateMachine implements IStateMachine {
 
         // exclusive block
         if ($mutex->Block()) {
-            $filecontents = Utils::SafeGetContents($this->userfilename, __FUNCTION__, true);
-
-            if ($filecontents)
-                $users = unserialize($filecontents);
-            else
+            $users = Utils::SafeGetContents($this->userfilename, __FUNCTION__, true, true);
+            if (!$users) {
                 $users = array();
-
+            }
             // is this user listed at all?
             if (isset($users[$username])) {
                 if (isset($users[$username][$devid])) {
@@ -301,12 +293,10 @@ class FileStateMachine implements IStateMachine {
             return $out;
         }
         else {
-            $filecontents = Utils::SafeGetContents($this->userfilename, __FUNCTION__, false);
-            if ($filecontents)
-                $users = unserialize($filecontents);
-            else
+            $users = Utils::SafeGetContents($this->userfilename, __FUNCTION__, false, true);
+            if (!$users) {
                 $users = array();
-
+            }
             // get device list for the user
             if (isset($users[$username]))
                 return array_keys($users[$username]);
@@ -323,8 +313,7 @@ class FileStateMachine implements IStateMachine {
      */
     public function GetStateVersion() {
         if (file_exists($this->settingsfilename)) {
-            $filecontents = Utils::SafeGetContents($this->settingsfilename, __FUNCTION__, false);
-            $settings = unserialize($filecontents);
+            $settings = Utils::SafeGetContents($this->settingsfilename, __FUNCTION__, false, true);
             if (strtolower(gettype($settings) == "string") && strtolower($settings) == '2:1:{s:7:"version";s:1:"2";}') {
                 ZLog::Write(LOGLEVEL_INFO, "Broken state version file found. Attempt to autofix it. See https://jira.zarafa.com/browse/ZP-493 for more information.");
                 unlink($this->settingsfilename);
@@ -355,8 +344,7 @@ class FileStateMachine implements IStateMachine {
      */
     public function SetStateVersion($version) {
         if (file_exists($this->settingsfilename)){
-            $filecontents = Utils::SafeGetContents($this->settingsfilename, __FUNCTION__, false);
-            $settings = unserialize($filecontents);
+            $settings = Utils::SafeGetContents($this->settingsfilename, __FUNCTION__, false, true);
         }
         else
             $settings = array(self::VERSION => IStateMachine::STATEVERSION_01);
@@ -449,7 +437,12 @@ class FileStateMachine implements IStateMachine {
         else
             throw new StateInvalidException("FileStateMachine->getFullFilePath(): Invalid state deviceid, type, key or in any combination");
 
-        return $this->getDirectoryForDevice($devid, $doNotCreateDirs) ."/". $internkey;
+        /** 
+         * @psalm-taint-escape ssrf
+         * @psalm-taint-escape file 
+         */
+        $cleaninternkey = basename($internkey);
+        return $this->getDirectoryForDevice($devid, $doNotCreateDirs) ."/". $cleaninternkey;
     }
 
     /**
@@ -465,8 +458,13 @@ class FileStateMachine implements IStateMachine {
      * @throws FatalMisconfigurationException   when configured directory is not writeable
      */
     private function getDirectoryForDevice($devid, $doNotCreateDirs = false) {
-        $firstLevel = substr(strtolower($devid), -1, 1);
-        $secondLevel = substr(strtolower($devid), -2, 1);
+        /** 
+         * @psalm-taint-escape ssrf
+         * @psalm-taint-escape file 
+         */
+        $cleandevid = basename($devid);
+        $firstLevel = substr(strtolower($cleandevid), -1, 1);
+        $secondLevel = substr(strtolower($cleandevid), -2, 1);
 
         $dir = STATE_DIR . $firstLevel . "/" . $secondLevel;
         if (is_dir($dir))

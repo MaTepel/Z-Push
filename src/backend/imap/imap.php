@@ -234,20 +234,25 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->SendMail(): We get the From and To"));
         $Mail_RFC822 = new Mail_RFC822();
 
-        $toaddr = "";
         $this->setFromHeaderValue($message->headers);
         $fromaddr = $this->parseAddr($Mail_RFC822->parseAddressList($message->headers["from"]));
 
+        $toaddr = "";
         if (isset($message->headers["to"])) {
-            $toaddr = $this->parseAddr($Mail_RFC822->parseAddressList($message->headers["to"]));
+            // don't validate atoms, headers might be UTF-8 not ASCII
+            $toaddr = $Mail_RFC822->parseAddressList($message->headers["to"], null, null, false, null);
+
+            $message->headers["to"] = Utils::CheckAndFixEncodingInHeadersOfSentMail($toaddr);
+            $toaddr = $this->parseAddr($toaddr);
             ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->SendMail(): To defined: %s", $toaddr));
         }
 
-        if (isset($message->headers["to"])) {
-            $message->headers["to"] = Utils::CheckAndFixEncodingInHeadersOfSentMail($Mail_RFC822->parseAddressList($message->headers["to"]));
-        }
         if (isset($message->headers["cc"])) {
-            $message->headers["cc"] = Utils::CheckAndFixEncodingInHeadersOfSentMail($Mail_RFC822->parseAddressList($message->headers["cc"]));
+            $message->headers["cc"] = Utils::CheckAndFixEncodingInHeadersOfSentMail($Mail_RFC822->parseAddressList($message->headers["cc"], null, null, false, null));
+        }
+
+        if (isset($message->headers["bcc"])) {
+            $message->headers["bcc"] = Utils::CheckAndFixEncodingInHeadersOfSentMail($Mail_RFC822->parseAddressList($message->headers["bcc"], null, null, false, null));
         }
 
         unset($Mail_RFC822);
@@ -1017,7 +1022,7 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
 
         if ($cutoffdate > 0) {
             // IMAP SINCE search criteria
-            $searchCriteria = "SINCE ". date("d-M-Y", $cutoffdate);
+            $searchCriteria = "SINCE ". date("d-M-Y", (int) $cutoffdate);
 
             // search messages in time range
             $search = @imap_search($this->mbox, $searchCriteria);
@@ -1123,7 +1128,7 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
     public function GetMessage($folderid, $id, $contentparameters) {
         $truncsize = Utils::GetTruncSize($contentparameters->GetTruncation());
         $mimesupport = $contentparameters->GetMimeSupport();
-        $bodypreference = $contentparameters->GetBodyPreference(); /* fmbiete's contribution r1528, ZP-320 */
+        $bodypreference = $contentparameters->GetBodyPreference() ?: []; /* fmbiete's contribution r1528, ZP-320 */
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->GetMessage('%s', '%s', '%s')", $folderid,  $id, implode(",", $bodypreference)));
 
         $folderImapid = $this->getImapIdFromFolderId($folderid);
@@ -1162,7 +1167,7 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
 
             // Detect Apple iOS devices
             $isAppleIosDevice = false;
-            $deviceType = strtolower(Request::GetDeviceType());
+            $deviceType = strtolower(Request::GetDeviceType() ?? '');
             if ($deviceType == 'iphone' || $deviceType == 'ipad' || $deviceType == 'ipod') {
                 ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->GetMessage():: iOS device %s->%s detected", Request::GetDeviceType(), Request::GetUserAgent()));
                 $isAppleIosDevice = true;
@@ -1300,7 +1305,17 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
             unset($textBody);
             unset($mail_headers);
 
-            $output->datereceived = isset($message->headers["date"]) ? $this->cleanupDate($message->headers["date"]) : null;
+            if (isset($message->headers["date"])) {
+                $output->datereceived = $this->cleanupDate($message->headers["date"]);
+            }
+            else {
+                // Fall back to IMAP INTERNALDATE for messages without a Date: header
+                // (e.g. RFC 5322 violators such as some IP cameras). Otherwise
+                // $output->datereceived would be null and EAS clients (iOS Mail etc.)
+                // display the sync time instead of the actual receipt time.
+                $overview = @imap_fetch_overview($this->mbox, $id, FT_UID);
+                $output->datereceived = (is_array($overview) && !empty($overview) && isset($overview[0]->udate)) ? $overview[0]->udate : null;
+            }
 
             if ($is_smime) {
                 // #190, KD 2015-06-04 - Add Encrypted (and possibly signed) to the classifications emitted
@@ -1359,11 +1374,11 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
             $Mail_RFC822 = new Mail_RFC822();
             $toaddr = $ccaddr = $replytoaddr = array();
             if(isset($message->headers["to"]))
-                $toaddr = $Mail_RFC822->parseAddressList($message->headers["to"]);
+                $toaddr = $Mail_RFC822->parseAddressList($message->headers["to"], null, null, false, null);
             if(isset($message->headers["cc"]))
-                $ccaddr = $Mail_RFC822->parseAddressList($message->headers["cc"]);
+                $ccaddr = $Mail_RFC822->parseAddressList($message->headers["cc"], null, null, false, null);
             if(isset($message->headers["reply-to"]))
-                $replytoaddr = $Mail_RFC822->parseAddressList($message->headers["reply-to"]);
+                $replytoaddr = $Mail_RFC822->parseAddressList($message->headers["reply-to"], null, null, false, null);
 
             $output->to = array();
             $output->cc = array();
@@ -2500,6 +2515,9 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
      * @return
      */
     protected function getModAndParentNames($fhir, &$displayname, &$parent) {
+        if (is_string($fhir)) {
+            $fhir = [$fhir];
+        }
         // if mod is already set add the previous part to it as it might be a folder which has delimiter in its name
         $displayname = (isset($displayname) && strlen($displayname) > 0) ? $displayname = array_pop($fhir) . $this->getServerDelimiter() . $displayname : array_pop($fhir);
         $parent = implode($this->getServerDelimiter(), $fhir);
@@ -2634,11 +2652,11 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
         if (is_array($toaddr)) {
             $recipients = $toaddr;
         }
-        else {
+        elseif ($toaddr !== "") {
             $recipients = array($toaddr);
         }
 
-        // Cc and Bcc headers are sent, but we need to make sure that the recipient list contains them
+        // add Bcc and Cc header fields to recipients
         foreach (array("CC", "cc", "Cc", "BCC", "Bcc", "bcc") as $key) {
             if (!empty($headers[$key])) {
                 if (is_array($headers[$key])) {
@@ -2646,6 +2664,11 @@ class BackendIMAP extends BackendDiff implements ISearchProvider {
                 }
                 else {
                     $recipients[] = $headers[$key];
+                }
+
+                // remove BCC header field from message
+                if (strcasecmp($key, "BCC") == 0) {
+                    unset($headers[$key]);
                 }
             }
         }

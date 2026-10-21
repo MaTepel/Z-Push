@@ -136,23 +136,36 @@ function getIdentityFromLdap($username, $domain, $identity, $encode = true) {
 
             if ($ldap_conn) {
                 ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromLdap() - Connected to LDAP"));
+
                 ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
                 ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 0);
                 $ldap_bind = ldap_bind($ldap_conn, IMAP_FROM_LDAP_USER, IMAP_FROM_LDAP_PASSWORD);
 
                 if ($ldap_bind) {
                     ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromLdap() - Authenticated in LDAP"));
-                    $filter = str_replace('#username', $username, str_replace('#domain', $domain, IMAP_FROM_LDAP_QUERY));
+
+                    $escapedusername = ldap_escape($username, '', LDAP_ESCAPE_FILTER | LDAP_ESCAPE_DN);
+                    $escapedusername = str_replace("\n", '\0a', $escapedusername);
+                    $escapeddomain = ldap_escape($domain, '', LDAP_ESCAPE_FILTER | LDAP_ESCAPE_DN);
+                    $escapeddomain = str_replace("\n", '\0a', $escapeddomain);
+
+                    $filter = str_replace('#username', $escapedusername, str_replace('#domain', $escapeddomain, IMAP_FROM_LDAP_QUERY));
                     ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromLdap() - Searching From with filter: %s", $filter));
+
                     $search = ldap_search($ldap_conn, IMAP_FROM_LDAP_BASE, $filter, unserialize(IMAP_FROM_LDAP_FIELDS));
                     $items = ldap_get_entries($ldap_conn, $search);
                     if ($items['count'] > 0) {
                         $ret_value = $identity;
                         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromLdap() - Found entry in LDAP. Generating From"));
-                        // We get the first object. It's your responsability to make the query unique
+
+                        // We get the first object. It's your responsibility to make the query unique.
                         foreach (unserialize(IMAP_FROM_LDAP_FIELDS) as $field) {
-                            $ret_value = str_replace('#'.$field, $items[0][$field][0], $ret_value);
+                            if (isset($items[0][$field][0])) {
+                                $ret_value = str_replace('#' . $field, $items[0][$field][0], $ret_value);
+                            }
                         }
+                        $ret_value = trim($ret_value);
+
                         if ($encode) {
                             $ret_value = encodeFrom($ret_value);
                         }
@@ -200,9 +213,14 @@ function getIdentityFromSql($username, $domain, $identity, $encode = true) {
         $dbh = new PDO(IMAP_FROM_SQL_DSN, IMAP_FROM_SQL_USER, IMAP_FROM_SQL_PASSWORD, unserialize(IMAP_FROM_SQL_OPTIONS));
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromSql() - Connected to SQL Database"));
 
-        $sql = str_replace('#username', $username, str_replace('#domain', $domain, IMAP_FROM_SQL_QUERY));
+        //replace config placeholdes with parameter placeholders
+        $sql = str_replace("'#username'", ":username", str_replace("'#domain'", ":domain", str_replace("'#username@#domain'", ":usernameatdomain", IMAP_FROM_SQL_QUERY)));
+        $usernameatdomain = $username . '@' . $domain;
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("BackendIMAP->getIdentityFromSql() - Searching From with filter: %s", $sql));
         $sth = $dbh->prepare($sql);
+        if(mb_strpos($sql, ':username') !== false) $sth->bindValue(':username', $username, PDO::PARAM_STR);
+        if(mb_strpos($sql, ':domain') !== false) $sth->bindValue(':domain', $domain, PDO::PARAM_STR);
+        if(mb_strpos($sql, ':usernameatdomain') !== false) $sth->bindValue(':usernameatdomain', $usernameatdomain, PDO::PARAM_STR);
         $sth->execute();
         $record = $sth->fetch(PDO::FETCH_ASSOC);
         if ($record) {

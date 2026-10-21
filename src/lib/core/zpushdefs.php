@@ -725,6 +725,8 @@ define("SYNC_FILTERTYPE_1MONTH", 5);
 define("SYNC_FILTERTYPE_3MONTHS", 6);
 define("SYNC_FILTERTYPE_6MONTHS", 7);
 define("SYNC_FILTERTYPE_INCOMPLETETASKS", 8);
+define("SYNC_FILTERTYPE_1YEAR", 101);
+define("MAX_CUSTOM_FILTERTYPE", 102);
 
 define("SYNC_TRUNCATION_HEADERS", 0);
 define("SYNC_TRUNCATION_512B", 1);
@@ -1061,3 +1063,8 @@ define('AUTODISCOVER_LOGIN_EMAIL', 0);
 define('AUTODISCOVER_LOGIN_NO_DOT', 1);
 define('AUTODISCOVER_LOGIN_F_NO_DOT_LAST', 2);
 define('AUTODISCOVER_LOGIN_F_DOT_LAST', 3);
+
+// define DAV SSL verify constants, off, on and auto (ignore for loopback)
+define('DAV_SSL_VERIFY_OFF', 0);
+define('DAV_SSL_VERIFY_ON', 1);
+define('DAV_SSL_VERIFY_AUTO', 2);

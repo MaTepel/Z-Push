@@ -339,7 +339,7 @@ class ZPushAdmin {
             return false;
         }
 
-        if ($filtertype !== false && $filtertype < SYNC_FILTERTYPE_ALL || $filtertype > SYNC_FILTERTYPE_INCOMPLETETASKS) {
+        if ($filtertype !== false && ($filtertype < SYNC_FILTERTYPE_ALL || ($filtertype > SYNC_FILTERTYPE_INCOMPLETETASKS && $filtertype <= 100) || ($filtertype >= MAX_CUSTOM_FILTERTYPE))) {
             ZLog::Write(LOGLEVEL_ERROR, sprintf("ZPushAdmin::SetDeviceOptions(): specified FilterType '%s' is out of bounds", $filtertype));
             return false;
         }
@@ -1019,6 +1019,9 @@ class ZPushAdmin {
                 if ($obsoleteState['type'] === IStateMachine::DEVICEDATA)
                     continue;
 
+                if ($obsoleteState['type'] === IStateMachine::BACKENDSTORAGE)
+                    continue;
+                
                 if (!in_array($obsoleteState['uuid'], $knownUuids)) {
                     if (is_numeric($obsoleteState['counter']))
                         $obsoleteState['counter']++;

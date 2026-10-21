@@ -331,6 +331,10 @@ class ZPush {
             throw new FatalMisconfigurationException("The FILE_STATE_WRITE_SLEEP value must be a number higher than 0.");
         }
 
+        //check retry loop settings when unserializing file state machine data from disk
+        if ((defined('FILE_STATE_UNSERIALIZE_ATTEMPTS')) && (!is_int(FILE_STATE_UNSERIALIZE_ATTEMPTS) || FILE_STATE_UNSERIALIZE_ATTEMPTS < 1)) {
+            throw new FatalMisconfigurationException("The FILE_STATE_UNSERIALIZE_ATTEMPTS value must be a number higher than 0.");
+        }
         return true;
     }
 
@@ -437,6 +441,11 @@ class ZPush {
             }
         }
 
+        // Check DAV SSL Verify option
+        if (!defined('DAV_SSL_VERIFY')) {
+            define('DAV_SSL_VERIFY', DAV_SSL_VERIFY_AUTO);
+        }
+                        
         ZLog::Write(LOGLEVEL_DEBUG, sprintf("Used timezone '%s'", date_default_timezone_get()));
 
         // get the statemachine, which will also try to load the backend.. This could throw errors
@@ -804,10 +813,16 @@ class ZPush {
     static public function PrintZPushLegal($message = "", $additionalMessage = "") {
         ZLog::Write(LOGLEVEL_DEBUG,"ZPush::PrintZPushLegal()");
 
+        $message = htmlspecialchars($message, ENT_QUOTES);
+        $additionalMessage = htmlspecialchars($additionalMessage, ENT_QUOTES);
+
         if ($message)
             $message = "<h3>". $message . "</h3>";
-        if ($additionalMessage)
-            $additionalMessage .= "<br>";
+        if ($additionalMessage) {
+            $additionalMessage = $additionalMessage . "<br>";
+            $additionalMessage = str_replace("&lt;pre&gt;", "<pre>", $additionalMessage);
+            $additionalMessage = str_replace("&lt;/pre&gt;", "</pre>", $additionalMessage);
+        }
 
         header("Content-type: text/html");
         print <<<END
@@ -822,9 +837,9 @@ class ZPush {
         <br><br>
         More information about Z-Push can be found at:<br>
         <a href="http://z-push.org/">Z-Push homepage</a><br>
-        <a href="http://z-push.org/download">Z-Push download page</a><br>
-        <a href="https://jira.z-hub.io/browse/ZP">Z-Push Bugtracker</a><br>
-        <a href="https://wiki.z-hub.io/display/ZP">Z-Push Wiki</a> and <a href="https://wiki.z-hub.io/display/ZP/Roadmap">Roadmap</a><br>
+        <a href="https://z-push.org/download/">Z-Push download page</a><br>
+        <a href="https://github.com/Z-Hub/Z-Push/issues">Z-Push Bugtracker</a><br>
+        <a href="https://github.com/Z-Hub/Z-Push/wiki">Z-Push Wiki</a> and <a href="https://github.com/Z-Hub/Z-Push/wiki/Roadmap">Roadmap</a><br>
         <br>
         All modifications to this sourcecode must be published and returned to the community.<br>
         Please see <a href="http://www.gnu.org/licenses/agpl-3.0.html">AGPLv3 License</a> for details.<br>

@@ -170,7 +170,7 @@ abstract class SyncObject extends Streamer {
      * @access public
      * @return array with one property per line, key being the property instance variable name
      */
-    public function EvaluateAndCompare($odo, $odoName = "", $supportedFields, $keyprefix = "", $recCount = 0) {
+    public function EvaluateAndCompare($odo, $supportedFields, $odoName = "", $keyprefix = "", $recCount = 0) {
         if ($odo === false)
             return false;
 
@@ -528,8 +528,8 @@ abstract class SyncObject extends Streamer {
                                 ZLog::Write(LOGLEVEL_WARN, sprintf("SyncObject->Check(): Unmet condition in object from type %s: parameter '%s' can not be compared, as the comparable is not set. Check failed!", $objClass, $v[self::STREAMER_VAR]));
                                 return false;
                             }
-                            if ( ($rule == self::STREAMER_CHECK_CMPHIGHER && $this->{$v[self::STREAMER_VAR]} < $cmp) ||
-                                 ($rule == self::STREAMER_CHECK_CMPLOWER  && $this->{$v[self::STREAMER_VAR]} > $cmp)
+                            if ( ($rule == self::STREAMER_CHECK_CMPHIGHER && (float)$this->{$v[self::STREAMER_VAR]} < $cmp) ||
+                                 ($rule == self::STREAMER_CHECK_CMPLOWER  && (float)$this->{$v[self::STREAMER_VAR]} > $cmp)
                                 ) {
 
                                 ZLog::Write(LOGLEVEL_WARN, sprintf("SyncObject->Check(): Unmet condition in object from type %s: parameter '%s' is %s than '%s'. Check failed!",
